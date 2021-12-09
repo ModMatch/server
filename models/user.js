@@ -12,7 +12,8 @@ var UserSchema = new Schema(
       match: [/^\w+([\.-]?\w+)*@u.nus.edu$/, 'Email address must end with u.nus.edu'],
       trim: true,
       lowercase: true,
-      unique: true}
+      unique: true},
+    password: {type: String, required: true, maxLength: 100}
   }
 );
 
