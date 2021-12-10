@@ -4,10 +4,13 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
-require('dotenv').config()  
+require('dotenv').config();
+var passport = require("passport");
+var jwtStrat  = require("./jwt")
+
 
 var indexRouter = require('./routes/index');
-var testApiRouter = require('./routes/testApi');
+//var testApiRouter = require('./routes/testApi');
 
 //Set up mongoose connection
 var mongoose = require('mongoose');
@@ -23,9 +26,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize());
+passport.use(jwtStrat);
 
 app.use('/', indexRouter);
-app.use("/testApi", testApiRouter);
+//app.use("/testApi", testApiRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
