@@ -77,5 +77,5 @@ exports.login = async (req, res, next)=> {
 exports.getAuth = [ 
   passport.authenticate('jwt', { session: false }), 
   (req, res) => {
-  return res.status(200).json({auth: true, user: req.user})}
+  return res.status(200).json({auth: true, name: req.user.name, id: req.user._id})}
 ];

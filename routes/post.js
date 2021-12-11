@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
-const { body,validationResult } = require("express-validator");
+var postController = require('../controllers/postController');
 
-router.post('/new', function(req, res, next) {
-  res;
-});
+router.get('/', postController.showPosts);
+
+router.post('/new', postController.addPost);
+
+router.delete('/:id', postController.deletePost);
 
 module.exports = router;

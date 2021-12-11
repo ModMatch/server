@@ -8,6 +8,7 @@ var PostSchema = new Schema(
     user: {type: Schema.Types.ObjectId, ref: 'User', required: true},
     description: {type: String, required: true},
     date: {type: Date, default: Date.now},
+    name: {type: String, required: true}
   }
 );
 
@@ -17,6 +18,8 @@ PostSchema
 .get(function () {
   return '/post/' + this._id;
 });
+
+PostSchema.set('toObject', { virtuals: true });
 
 //Export model
 module.exports = mongoose.model('Post', PostSchema);
