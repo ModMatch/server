@@ -12,7 +12,8 @@ exports.addPost = [
       title: req.body.title,
       user:req.body.user,
       description: req.body.description,
-      name: req.body.name
+      name: req.body.name,
+      tag: req.body.tag
     })
 
     try {
@@ -30,7 +31,19 @@ exports.showPosts = [
   async (req, res, next) =>  {
     try {
       let posts = await Post.find().sort({date : -1}).exec();
-      res.json({posts})
+      return res.json({posts});
+    } catch(err) {
+      return next(err);
+    }
+  }
+]
+
+exports.getPost = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res, next) =>  {
+    try {
+      let post = await Post.findById(req.params.id).exec();
+      return res.json({post});
     } catch(err) {
       return next(err);
     }
@@ -42,7 +55,23 @@ exports.deletePost = [
   async (req, res, next) =>  {
     try {
      await Post.findByIdAndRemove(req.params.id).exec();
-     res.status(200);
+     return res.status(200);
+    } catch(err) {
+      return next(err);
+    }
+  }
+]
+
+exports.updatePost = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res, next) =>  {
+    try {
+     await Post.findByIdAndUpdate(req.params.id, {
+      title: req.body.title,
+      description: req.body.description,      
+      tag: req.body.tag
+     }).exec();
+     return res.status(200);
     } catch(err) {
       return next(err);
     }

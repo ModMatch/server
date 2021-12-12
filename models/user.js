@@ -13,7 +13,7 @@ var UserSchema = new Schema(
       trim: true,
       lowercase: true,
       unique: true},
-    password: {type: String, required: true, maxLength: 100}
+    password: {type: String, required: true, maxLength: 100},
   }
 );
 
