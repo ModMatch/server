@@ -12,4 +12,10 @@ router.put('/:id', postController.updatePost);
 
 router.get('/:id', postController.getPost);
 
+router.post('/:id', postController.addComment);
+
+router.delete('/:id/:commentid', postController.deleteComment);
+
+router.put('/:id/:commentid', postController.updateComment);
+
 module.exports = router;
