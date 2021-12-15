@@ -13,7 +13,6 @@ exports.addPost = [
       title: req.body.title,
       user:req.body.user,
       description: req.body.description,
-      name: req.body.name,
       tag: req.body.tag
     })
 
@@ -31,7 +30,9 @@ exports.showPosts = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
     try {
-      let posts = await Post.find().sort({date : -1}).exec();
+      let posts = await Post.find().sort({date : -1})
+      .populate('author', '-password -email')
+      .exec();
       return res.json({posts});
     } catch(err) {
       return next(err);
@@ -43,7 +44,14 @@ exports.getPost = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
     try {
-      let post = await Post.findById(req.params.id).populate({path: "comments", options: { sort: { date: -1 } }}).exec();
+      let post = await Post.findById(req.params.id)
+      .populate({
+        path: "comments", 
+        options: { sort: { date: -1 } },
+        populate: {path: "commenter", select: "-password -email"}
+      })
+      .populate('author', '-password -email')
+      .exec();
       return res.json({post});
     } catch(err) {
       return next(err);
@@ -91,7 +99,6 @@ exports.addComment = [
     var comment = new Comment({
       user:req.body.user,
       description: req.body.description,
-      name: req.body.name
     })
 
     try {

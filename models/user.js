@@ -13,7 +13,7 @@ var UserSchema = new Schema(
       trim: true,
       lowercase: true,
       unique: true},
-    password: {type: String, required: true, maxLength: 100},
+    password: {type: String, required: true, maxLength: 100}
   }
 );
 
@@ -36,8 +36,11 @@ UserSchema
 UserSchema
 .virtual('url')
 .get(function () {
-  return '/user/' + this._id;
+  return '/users/' + this._id;
 });
+
+UserSchema.set('toObject', { virtuals: true });
+UserSchema.set('toJSON', { virtuals: true });
 
 //Export model
 module.exports = mongoose.model('User', UserSchema);

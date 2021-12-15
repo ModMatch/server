@@ -9,7 +9,6 @@ var PostSchema = new Schema(
     user: {type: Schema.Types.ObjectId, ref: 'User', required: true},
     description: {type: String, required: true},
     date: {type: Date, default: Date.now},
-    name: {type: String, required: true},
     tag: {type: String, required: true},
     comments: [{type: Schema.Types.ObjectId, ref: 'Comment', required: false}]
   }
@@ -20,6 +19,14 @@ PostSchema
 .virtual('url')
 .get(function () {
   return '/post/' + this._id;
+});
+
+PostSchema
+.virtual('author', {
+  ref: 'User',
+  localField: 'user',
+  foreignField: '_id',
+  justOne: true
 });
 
 PostSchema
