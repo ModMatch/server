@@ -1,5 +1,6 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
+const Group = require('../models/group');
 const { body,validationResult } = require("express-validator");
 const passport = require("passport");
 
@@ -9,20 +10,27 @@ exports.addPost = [
   body('description').trim().escape(),
   async (req, res, next) => {
 
+    var group = new Group({
+      users: [req.body.user],
+      size: parseInt(req.body.size) + 1,
+      vet: req.body.vet
+    });
+
     var post = new Post({
       title: req.body.title,
       user:req.body.user,
       description: req.body.description,
-      tag: req.body.tag
-    })
+      tag: req.body.tag,
+      group: group._id
+    });
 
     try {
-      await post.save();
+      await group.save();
+      await post.save()
       return res.status(200).json("Post success!");
     } catch (err) {
       return next(err);
     }
-
   }
 ]
 
@@ -30,7 +38,7 @@ exports.showPosts = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
     try {
-      let posts = await Post.find().sort({date : -1})
+      let posts = await Post.find({pending: true}).sort({date : -1})
       .populate('author', '-password -email')
       .exec();
       return res.json({posts});
@@ -51,6 +59,7 @@ exports.getPost = [
         populate: {path: "commenter", select: "-password -email"}
       })
       .populate('author', '-password -email')
+      .populate('group')
       .exec();
       return res.json({post});
     } catch(err) {
@@ -67,7 +76,8 @@ exports.deletePost = [
       post.comments.forEach(i => {
         Comment.findByIdAndRemove(i).exec();
       })
-      await Post.findByIdAndRemove(req.params.id)
+      await Group.findByIdAndRemove(post.group);
+      await Post.findByIdAndRemove(req.params.id);
       return res.status(200);
     } catch(err) {
       return next(err);

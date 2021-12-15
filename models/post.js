@@ -10,6 +10,8 @@ var PostSchema = new Schema(
     description: {type: String, required: true},
     date: {type: Date, default: Date.now},
     tag: {type: String, required: true},
+    group: {type: Schema.Types.ObjectId, ref: 'Group', required: true},
+    pending: {type: Boolean, default: true},
     comments: [{type: Schema.Types.ObjectId, ref: 'Comment', required: false}]
   }
 );

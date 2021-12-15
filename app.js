@@ -12,6 +12,7 @@ var jwtStrat  = require("./jwt")
 var indexRouter = require('./routes/index');
 var postRouter = require('./routes/post');
 var userRouter = require('./routes/user');
+var groupRouter = require('./routes/group');
 
 //Set up mongoose connection
 var mongoose = require('mongoose');
@@ -33,6 +34,7 @@ passport.use(jwtStrat);
 app.use('/', indexRouter);
 app.use("/posts", postRouter);
 app.use('/users', userRouter);
+app.use('/groups', groupRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
