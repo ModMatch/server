@@ -9,4 +9,6 @@ router.get('/:id', userController.getUser);
 
 router.put('/:id', userController.updateUser);
 
+router.get('/:id/groups', userController.getUserGroups);
+
 module.exports = router;

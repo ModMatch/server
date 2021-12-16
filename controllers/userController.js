@@ -4,6 +4,7 @@ const { body,validationResult } = require("express-validator");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
+const confirmedGroup = require('../models/confirmedGroup');
 
 /* Add new user to database */
 exports.addUser = [
@@ -91,6 +92,20 @@ exports.getUser = [
     }
     const posts = await Post.find({user: user._id}).populate('author','-password -email').sort({date : -1}).exec();
     return res.status(200).json({user, posts});
+  }
+]
+
+exports.getUserGroups = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res) => {
+    let user;
+    if (req.params.id == req.user._id) {
+      user = req.user;
+    } else {
+      return res.status(401);
+    }
+    const groups = await confirmedGroup.find({users: user._id}).populate('users','email').exec();
+    return res.status(200).json({groups});
   }
 ]
 
