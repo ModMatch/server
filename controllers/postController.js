@@ -1,6 +1,7 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const Group = require('../models/group');
+const VetGroup = require('../models/vetGroup');
 const { body,validationResult } = require("express-validator");
 const passport = require("passport");
 
@@ -9,20 +10,34 @@ exports.addPost = [
   body('title').trim().escape(),
   body('description').trim().escape(),
   async (req, res, next) => {
-
-    var group = new Group({
-      users: [req.body.user],
-      size: parseInt(req.body.size) + 1,
-      vet: req.body.vet
-    });
-
-    var post = new Post({
-      title: req.body.title,
-      user:req.body.user,
-      description: req.body.description,
-      tag: req.body.tag,
-      group: group._id
-    });
+    var group, post;
+    if (req.body.vet) {
+      group = new VetGroup({
+        request: [],
+        questions: req.body.questions
+      });
+      post = new Post({
+        title: req.body.title,
+        user:req.body.user,
+        description: req.body.description,
+        tag: req.body.tag,
+        group: group._id,
+        onModel: "VetGroup"
+      });
+    } else {
+      group = new Group({
+        users: [req.body.user],
+        size: parseInt(req.body.size) + 1,
+      });
+      post = new Post({
+        title: req.body.title,
+        user:req.body.user,
+        description: req.body.description,
+        tag: req.body.tag,
+        group: group._id,
+        onModel: "Group"
+      });
+    }
 
     try {
       await group.save();
@@ -59,8 +74,18 @@ exports.getPost = [
         populate: {path: "commenter", select: "-password -email"}
       })
       .populate('author', '-password -email')
-      .populate('group')
-      .exec();
+      .populate('group');
+      if (post.onModel === 'VetGroup') {
+        post = await Post.findById(req.params.id)
+          .populate({
+            path: "comments", 
+            options: { sort: { date: -1 } },
+            populate: {path: "commenter", select: "-password -email"}
+          })
+          .populate('author', '-password -email')
+          .populate('group')
+          .populate('group.requests');
+      }
       return res.json({post});
     } catch(err) {
       return next(err);

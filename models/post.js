@@ -10,7 +10,8 @@ var PostSchema = new Schema(
     description: {type: String, required: true},
     date: {type: Date, default: Date.now},
     tag: {type: String, required: true},
-    group: {type: Schema.Types.ObjectId, ref: 'Group', required: true},
+    group: {type: Schema.Types.ObjectId, refPath: 'onModel', required: true},
+    onModel: {type: String, required: true, enum: ['Group', 'VetGroup']},
     pending: {type: Boolean, default: true},
     comments: [{type: Schema.Types.ObjectId, ref: 'Comment', required: false}]
   }

@@ -5,8 +5,7 @@ var Schema = mongoose.Schema;
 var GroupSchema = new Schema(
   {
     users: [{type: Schema.Types.ObjectId, ref: 'User'}],
-    size: {type: Number, default: 3},
-    vet: {type: Boolean}
+    size: {type: Number, default: 3}
   }
 );
 
