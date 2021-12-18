@@ -5,6 +5,7 @@ const ConfirmedGroup = require('../models/confirmedGroup');
 const { body,validationResult } = require("express-validator");
 const passport = require("passport");
 
+// updates group after request for joining is submitted
 exports.updateGroup = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
