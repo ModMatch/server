@@ -2,6 +2,7 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const Group = require('../models/group');
 const VetGroup = require('../models/vetGroup');
+const Request = require('../models/request');
 const { body,validationResult } = require("express-validator");
 const passport = require("passport");
 
@@ -83,8 +84,10 @@ exports.getPost = [
             populate: {path: "commenter", select: "-password -email"}
           })
           .populate('author', '-password -email')
-          .populate('group')
-          .populate('group.requests');
+          .populate({
+            path: 'group',
+            populate: {path: "requests"}
+          })
       }
       return res.json({post});
     } catch(err) {
@@ -101,7 +104,15 @@ exports.deletePost = [
       post.comments.forEach(i => {
         Comment.findByIdAndRemove(i).exec();
       })
-      await Group.findByIdAndRemove(post.group);
+      if (post.onModel === 'VetGroup') {
+        let group = await VetGroup.findById(post.group);
+        group.requests.forEach(i => {
+          Request.findByIdAndRemove(i).exec();
+        })
+        await VetGroup.findByIdAndRemove(post.group)
+      } else {
+        await Group.findByIdAndRemove(post.group);
+      }
       await Post.findByIdAndRemove(req.params.id);
       return res.status(200);
     } catch(err) {

@@ -5,7 +5,8 @@ var Schema = mongoose.Schema;
 var RequestSchema = new Schema(
   {
     user: {type: Schema.Types.ObjectId, ref: 'User'},
-    responses: [{type: String}]
+    responses: [{type: String}],
+    approval: {type: Boolean, default: false}
   }
 );
 
