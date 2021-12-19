@@ -96,6 +96,25 @@ exports.getPost = [
   }
 ]
 
+exports.getPostApp = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res, next) =>  {
+    try {
+      let post = await Post.findById(req.params.id)
+        .populate({
+          path: 'group',
+          populate: {path: "requests"}
+        })
+      if (String(req.user._id) !== String(post.user)) {
+        return res.status(401).json("Forbidden");
+      }
+      return res.json({post});
+    } catch(err) {
+      return next(err);
+    }
+  }
+]
+
 exports.deletePost = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {

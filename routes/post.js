@@ -11,6 +11,7 @@ router.delete('/:id', postController.deletePost);
 router.put('/:id', postController.updatePost);
 
 router.get('/:id', postController.getPost);
+router.get('/:id/viewapp', postController.getPostApp);
 
 router.post('/:id', postController.addComment);
 

@@ -6,7 +6,7 @@ var RequestSchema = new Schema(
   {
     user: {type: Schema.Types.ObjectId, ref: 'User'},
     responses: [{type: String}],
-    approval: {type: Boolean, default: false}
+    approval: {type: String, required: true, enum: ['true', 'false', 'pending']}
   }
 );
 
