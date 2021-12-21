@@ -15,8 +15,21 @@ exports.updateGroup = [
     try {
       if (req.body.userid) {
         const g = await VetGroup
-          .findOneAndUpdate({_id: req.params.id},{$pull: {requests: {user: req.body.userid}}}) //TO FIX
+          .findById(req.params.id)
+          .populate('requests')
           .exec();
+        for (let i = 0; i < g.requests.length; i++) {
+          let r = g.requests[i];
+          if (String(r.user) == String(req.body.userid)) {
+            Request.findByIdAndDelete(r._id).exec();
+            await VetGroup
+            .findByIdAndUpdate(req.params.id, {
+              $pull: {requests: r._id}
+            })
+            .exec();
+            break;
+          }
+        }
         return res.status(200);
       }
       else {
