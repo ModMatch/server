@@ -64,6 +64,20 @@ exports.showPosts = [
   }
 ]
 
+exports.showPostsWithTag = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res, next) =>  {
+    try {
+      let posts = await Post.find({pending: true,  tag: req.params.tagname}).sort({date : -1})
+      .populate('author', '-password -email')
+      .exec();
+      return res.json({posts});
+    } catch(err) {
+      return next(err);
+    }
+  }
+]
+
 exports.getPost = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
