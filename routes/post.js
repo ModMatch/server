@@ -5,6 +5,8 @@ var postController = require('../controllers/postController');
 router.get('/', postController.showPosts);
 
 router.post('/new', postController.addPost);
+  
+router.get('/search', postController.showPostsWithQuery);
 
 router.delete('/:id', postController.deletePost);
 

@@ -78,6 +78,20 @@ exports.showPostsWithTag = [
   }
 ]
 
+exports.showPostsWithQuery = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res, next) =>  {
+    try {
+      let posts = await Post.find({pending: true,  tag: { $regex: new RegExp('.*' + req.query.q + '.*'), $options: 'i' }}).sort({date : -1})
+      .populate('author', '-password -email')
+      .exec();
+      return res.json({posts});
+    } catch(err) {
+      return next(err);
+    }
+  }
+]
+
 exports.getPost = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
