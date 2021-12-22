@@ -4,16 +4,18 @@ const Group = require('../models/group');
 const ConfirmedGroup = require('../models/confirmedGroup');
 const Request = require('../models/request')
 const VetGroup = require('../models/vetGroup');
-const { body,validationResult } = require("express-validator");
+const User = require('../models/user');
 const passport = require("passport");
-var mongoose = require('mongoose');
 
-// updates group after request for joining is submitted
+// updates group after request for joining is submitted or to unapply
 exports.updateGroup = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
     try {
-      if (req.body.userid) {
+      if (req.body.vet) {
+        await User.findByIdAndUpdate(req.body.userid, {
+          $pull: {applied: req.body.postid}
+        })
         const g = await VetGroup
           .findById(req.params.id)
           .populate('requests')
@@ -47,8 +49,21 @@ exports.updateGroup = [
           post.comments.forEach(i => {
             Comment.findByIdAndRemove(i).exec();
           })
+          req.body.users.forEach(async u => {
+            await User.findByIdAndUpdate(u, {
+              $pull: {applied: req.body.postid}
+            })
+          })
           await Group.findByIdAndDelete(req.params.id).exec();
           return res.status(200).json({isFull: true, group: confirmedGroup});
+        } else if (req.body.isJoin) {
+          await User.findByIdAndUpdate(req.body.userid, {
+            $push: {applied: req.body.postid}
+          })
+        } else {
+          await User.findByIdAndUpdate(req.body.userid, {
+            $pull: {applied: req.body.postid}
+          })
         }
         return res.status(200).json({isFull : false});
       }
@@ -58,6 +73,7 @@ exports.updateGroup = [
   }
 ]
 
+// Upon submit of application by user
 exports.updateVetGroup = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
@@ -66,11 +82,15 @@ exports.updateVetGroup = [
         user: req.body.id,
         responses: req.body.responses,
         approval: 'pending'
-      })
+      });
       await request.save();
       await VetGroup.findByIdAndUpdate(req.params.id, {
         $push: {requests: request}
       });
+      const a = await User.findByIdAndUpdate(req.body.id, {
+        $push: {applied: req.body.postid}
+      }, {returnDocument: "after"});
+      console.log(a)
       return res.status(200);
     } catch(err) {
       return next(err);
@@ -78,6 +98,7 @@ exports.updateVetGroup = [
   }
 ]
 
+// Approval/rejection of request by group owner
 exports.updateRequest = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
@@ -85,23 +106,6 @@ exports.updateRequest = [
       await Request.findByIdAndUpdate(req.params.reqid, {
         approval: req.body.approval
       })
-      return res.status(200);
-    } catch(err) {
-      return next(err);
-    }
-  }
-]
-
-exports.updateConfirmedGroup = [
-  passport.authenticate('jwt', { session: false }), 
-  async (req, res, next) =>  {
-    try {
-      const group = await ConfirmedGroup.findByIdAndUpdate(req.params.id, {
-        $pull: {users: req.user._id}
-      }, {returnDocument : 'after'});
-      if (group.users.lenght == 0) {
-        await ConfirmedGroup.findByIdAndDelete(req.params.id);
-      }
       return res.status(200);
     } catch(err) {
       return next(err);
@@ -120,10 +124,13 @@ exports.closeVetGroup = [
       });
       let userArr = [post.user._id];
       const group = post.group;
-      group.requests.forEach(r => {
+      group.requests.forEach(async r => {
         if (r.approval === 'true') {
           userArr.push(r.user);
         }
+        await User.findByIdAndUpdate(r.user, {
+          $pull: {applied: req.params.id}
+        })
         Request.findByIdAndRemove(r._id).exec();
       })
       const confirmedGroup = new ConfirmedGroup({

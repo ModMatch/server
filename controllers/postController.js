@@ -3,7 +3,8 @@ const Comment = require('../models/comment');
 const Group = require('../models/group');
 const VetGroup = require('../models/vetGroup');
 const Request = require('../models/request');
-const { body,validationResult } = require("express-validator");
+const User = require('../models/user');
+const { body } = require("express-validator");
 const passport = require("passport");
 
 exports.addPost = [
@@ -147,20 +148,26 @@ exports.deletePost = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
     try {
-      let post = await Post.findById(req.params.id).exec();
+      let post = await Post.findByIdAndRemove(req.params.id).exec();
       post.comments.forEach(i => {
         Comment.findByIdAndRemove(i).exec();
       })
       if (post.onModel === 'VetGroup') {
-        let group = await VetGroup.findById(post.group);
-        group.requests.forEach(i => {
-          Request.findByIdAndRemove(i).exec();
+        let group = await VetGroup.findByIdAndRemove(post.group);
+        group.requests.forEach(async i => {
+          const r = await Request.findByIdAndRemove(i).exec();
+          User.findByIdAndUpdate(r.user, {
+            $pull: {applied: req.params.id}
+          }).exec()
         })
-        await VetGroup.findByIdAndRemove(post.group)
       } else {
-        await Group.findByIdAndRemove(post.group);
+        let group = await Group.findByIdAndRemove(post.group);
+        group.users.forEach(i => {
+          User.findByIdAndUpdate(i, {
+            $pull: {applied: req.params.id}
+          }).exec()
+        })
       }
-      await Post.findByIdAndRemove(req.params.id);
       return res.status(200);
     } catch(err) {
       return next(err);

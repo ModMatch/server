@@ -11,4 +11,6 @@ router.put('/:id', userController.updateUser);
 
 router.get('/:id/groups', userController.getUserGroups);
 
+router.get('/:id/pendingGroups', userController.getUserPendingGroups);
+
 module.exports = router;

@@ -109,6 +109,25 @@ exports.getUserGroups = [
   }
 ]
 
+exports.getUserPendingGroups = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res) => {
+    let user;
+    if (req.params.id == req.user._id) {
+      user = req.user;
+    } else {
+      return res.status(401);
+    }
+    const groups = await User.findById(user._id)
+    .populate({
+      path: 'applied',
+      populate: {path: 'author', select: '-password -email'},
+      options: { sort: { date: -1 } }
+    }).exec();
+    return res.status(200).json({groups});
+  }
+]
+
 exports.updateUser = [
   passport.authenticate('jwt', { session: false }), 
   body('password').isLength({min: 7}).withMessage("Password must be at least 7 characters long"),
