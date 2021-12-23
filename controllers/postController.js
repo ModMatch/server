@@ -4,6 +4,7 @@ const Group = require('../models/group');
 const VetGroup = require('../models/vetGroup');
 const Request = require('../models/request');
 const User = require('../models/user');
+const Notification = require('../models/notification');
 const { body } = require("express-validator");
 const passport = require("passport");
 
@@ -201,9 +202,17 @@ exports.addComment = [
       description: req.body.description,
     })
 
+    var notif = new Notification({
+      title: `${req.body.name} commented on your post`,
+      description: req.body.description,
+      post: req.params.id
+    })
+
     try {
+      await notif.save();
       await comment.save(async (err, c)=> {
-        await Post.findByIdAndUpdate(req.params.id, {$push: { comments: c.id }}).exec();
+        const post = await Post.findByIdAndUpdate(req.params.id, {$push: { comments: c.id }}).exec();
+        await User.findByIdAndUpdate(post.user, {$push: { notifications : notif._id}}).exec();
       });
       return res.status(200).json("Comment success!");
     } catch (err) {

@@ -109,6 +109,20 @@ exports.getUserGroups = [
   }
 ]
 
+exports.getUserNotifications = [
+  passport.authenticate('jwt', { session: false }), 
+  async (req, res) => {
+    let user;
+    if (req.params.id == req.user._id) {
+      user = req.user;
+    } else {
+      return res.status(401);
+    }
+    const notifs = await User.findById(user._id).populate('notifications').select('notifications  ').exec();
+    return res.status(200).json({notifs});
+  }
+]
+
 exports.getUserPendingGroups = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res) => {

@@ -9,6 +9,8 @@ router.get('/:id', userController.getUser);
 
 router.put('/:id', userController.updateUser);
 
+router.get('/:id/notifications', userController.getUserNotifications);
+
 router.get('/:id/groups', userController.getUserGroups);
 
 router.get('/:id/pendingGroups', userController.getUserPendingGroups);

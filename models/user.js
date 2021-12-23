@@ -15,6 +15,7 @@ var UserSchema = new Schema(
       unique: true},
     password: {type: String, required: true, maxLength: 100},
     applied: [{type: Schema.Types.ObjectId, ref: 'Post', required: false}],
+    notifications: [{type: Schema.Types.ObjectId, ref: 'Notification', required: false}],
   }
 );
 
