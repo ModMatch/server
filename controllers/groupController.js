@@ -6,6 +6,7 @@ const Request = require('../models/request')
 const VetGroup = require('../models/vetGroup');
 const User = require('../models/user');
 const passport = require("passport");
+const Notification = require('../models/notification');
 
 // updates group after request for joining is submitted or to unapply
 exports.updateGroup = [
@@ -45,13 +46,19 @@ exports.updateGroup = [
             title: post.title,
             description: post.description
           });
+          var notif = new Notification({
+            title: `Your ${post.tag} group has been formed`,
+            description: " "
+          })
           await confirmedGroup.save();
+          await notif.save()
           post.comments.forEach(i => {
             Comment.findByIdAndRemove(i).exec();
           })
           req.body.users.forEach(async u => {
             await User.findByIdAndUpdate(u, {
-              $pull: {applied: req.body.postid}
+              $pull: {applied: req.body.postid},
+              $push: {notifications : notif._id}
             })
           })
           await Group.findByIdAndDelete(req.params.id).exec();

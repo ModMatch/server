@@ -202,17 +202,18 @@ exports.addComment = [
       description: req.body.description,
     })
 
-    var notif = new Notification({
-      title: `${req.body.name} commented on your post`,
-      description: req.body.description,
-      post: req.params.id
-    })
-
     try {
-      await notif.save();
       await comment.save(async (err, c)=> {
         const post = await Post.findByIdAndUpdate(req.params.id, {$push: { comments: c.id }}).exec();
-        await User.findByIdAndUpdate(post.user, {$push: { notifications : notif._id}}).exec();
+        if (req.body.postuser != req.body.user) {
+          var notif = new Notification({
+            title: `${req.body.name} commented on your post`,
+            description: req.body.description,
+            post: req.params.id
+          })
+          await notif.save();
+          await User.findByIdAndUpdate(post.user, {$push: { notifications : notif._id}}).exec();
+        }
       });
       return res.status(200).json("Comment success!");
     } catch (err) {
