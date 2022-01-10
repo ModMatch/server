@@ -90,14 +90,22 @@ exports.updateVetGroup = [
         responses: req.body.responses,
         approval: 'pending'
       });
+      var notif = new Notification({
+        title: `${req.body.name} applied for your group`,
+        description: " ",
+        post: req.body.postid
+      })
+      await notif.save()
       await request.save();
       await VetGroup.findByIdAndUpdate(req.params.id, {
         $push: {requests: request}
       });
-      const a = await User.findByIdAndUpdate(req.body.id, {
+      await User.findByIdAndUpdate(req.body.id, {
         $push: {applied: req.body.postid}
       }, {returnDocument: "after"});
-      console.log(a)
+      await User.findByIdAndUpdate(req.body.posterid, {
+        $push: {notifications : notif._id}
+      })
       return res.status(200);
     } catch(err) {
       return next(err);
@@ -131,13 +139,24 @@ exports.closeVetGroup = [
       });
       let userArr = [post.user._id];
       const group = post.group;
+      var notif = new Notification({
+        title: `Your ${post.tag} group has been formed`,
+        description: " "
+      })
+      await notif.save()
       group.requests.forEach(async r => {
         if (r.approval === 'true') {
           userArr.push(r.user);
+          await User.findByIdAndUpdate(r.user, {
+            $push: {notifications : notif._id},
+            $pull: {applied: req.params.id}
+          });
         }
-        await User.findByIdAndUpdate(r.user, {
-          $pull: {applied: req.params.id}
-        })
+        else {
+          await User.findByIdAndUpdate(r.user, {
+            $pull: {applied: req.params.id}
+          })
+        }
         Request.findByIdAndRemove(r._id).exec();
       })
       const confirmedGroup = new ConfirmedGroup({

@@ -14,7 +14,10 @@ var NotificationSchema = new Schema(
 NotificationSchema
 .virtual('url')
 .get(function () {
-  return '/post/' + this.post;
+  if (this.post) {
+    return '/post/' + this.post;
+  }
+    return '/groups';
 });
 
 NotificationSchema.set('toObject', { virtuals: true });
