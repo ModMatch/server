@@ -106,6 +106,9 @@ exports.getPost = [
       })
       .populate('author', '-password -email')
       .populate('group');
+      if (post === null) {
+        return res.status(404).json("Not found");
+      }
       if (post.onModel === 'VetGroup') {
         post = await Post.findById(req.params.id)
           .populate({
