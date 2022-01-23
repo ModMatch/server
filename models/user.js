@@ -16,6 +16,8 @@ var UserSchema = new Schema(
     password: {type: String, required: true, maxLength: 100},
     applied: [{type: Schema.Types.ObjectId, ref: 'Post', required: false}],
     notifications: [{type: Schema.Types.ObjectId, ref: 'Notification', required: false}],
+    temporarytoken: {type: String, required: true, default: false},
+    active: {type: Boolean, required: true, default: false}
   }
 );
 

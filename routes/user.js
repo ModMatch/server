@@ -15,4 +15,6 @@ router.get('/:id/groups', userController.getUserGroups);
 
 router.get('/:id/pendingGroups', userController.getUserPendingGroups);
 
+router.put('/:id/verify/:token', userController.verifyUser);
+
 module.exports = router;

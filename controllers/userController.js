@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const confirmedGroup = require('../models/confirmedGroup');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 /* Add new user to database */
 exports.addUser = [
@@ -24,7 +26,8 @@ exports.addUser = [
         surname: req.body.surname,
         surname_first: req.body.surnameOrder,
         email: req.body.email,
-        password: hashedPassword
+        password: hashedPassword,
+        temporarytoken: jwt.sign({email: req.body.email} , process.env.JWT_SECRET_KEY)
       })
     } catch(err) {
       return next(err);
@@ -44,13 +47,46 @@ exports.addUser = [
     }
 
     try {
-      await user.save()
+      await user.save();
+      const msg = {
+        to: user.email,
+        from: 'modmatchapp@gmail.com',
+        subject: 'Thank for registering with ModMatch',
+        text: `Click on this link to get verified now: http://localhost:3000/verify/${user._id}/${user.temporarytoken}`,
+        html: `<strong>Click on <a href="http://localhost:3000/verify/${user._id}/${user.temporarytoken}">this</a> link to get verified now! </strong>`,
+      }
+      sgMail
+        .send(msg)
+        .then(() => {
+          console.log('Email sent')
+        })
+        .catch((error) => {
+          console.error(error)
+        })
       res.status(200).json({success: true})
     } catch(err) {
       return next(err);
     }
   }
 ];
+
+exports.verifyUser = async (req, res, next) => {
+  const user = await User.findById(req.params.id).exec();
+  const token = req.params.token;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    if (!user || decoded.email !== user.email) {
+      res.json({message: "There is something wrong with the link" });
+      } else {
+      user.temporarytoken = false;
+      user.active = true;
+      user.save();
+      res.json({message: "You are successfully verified!"});
+    }
+  } catch(err) {
+    return next(err);
+  }
+}
 
 /* Logs in existing user */
 exports.login = async (req, res, next)=> {
@@ -63,6 +99,9 @@ exports.login = async (req, res, next)=> {
     const validPassword = await bcrypt.compare(req.body.password, existingUser.password);
     if (!validPassword) {
       return res.status(401).json({message: 'Invalid Email or Password.'});
+    }
+    if (!existingUser.active) {
+      return res.status(401).json({message: 'Account has not been activated. Please check your email'});
     }
     const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {expiresIn: 3600});
     res.json({
