@@ -52,8 +52,8 @@ exports.addUser = [
         to: user.email,
         from: 'modmatchapp@gmail.com',
         subject: 'Thank for registering with ModMatch',
-        text: `Click on this link to get verified now: http://localhost:3000/verify/${user._id}/${user.temporarytoken}`,
-        html: `<strong>Click on <a href="http://localhost:3000/verify/${user._id}/${user.temporarytoken}">this</a> link to get verified now! </strong>`,
+        text: `Click on this link to get verified now: ${process.env.MODMATCH_LINK}/verify/${user._id}/${user.temporarytoken}`,
+        html: `<strong>Click on <a href="${process.env.MODMATCH_LINK}/verify/${user._id}/${user.temporarytoken}">this</a> link to get verified now! </strong>`,
       }
       sgMail
         .send(msg)
@@ -157,7 +157,7 @@ exports.getUserNotifications = [
     } else {
       return res.status(401);
     }
-    const notifs = await User.findById(user._id).populate('notifications').select('notifications  ').exec();
+    const notifs = await User.findById(user._id).populate('notifications').select('notifications').exec();
     return res.status(200).json({notifs});
   }
 ]
