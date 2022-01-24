@@ -56,7 +56,8 @@ exports.showPosts = [
   passport.authenticate('jwt', { session: false }), 
   async (req, res, next) =>  {
     try {
-      let posts = await Post.find({pending: true}).sort({date : -1})
+      const lastDate = req.query.lastDate;
+      let posts = await Post.find({pending: true, date: {'$lt': lastDate}}).sort({date : -1}).limit(10)
       .populate('author', '-password -email')
       .exec();
       return res.json({posts});
