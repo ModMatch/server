@@ -213,7 +213,8 @@ exports.addComment = [
           var notif = new Notification({
             title: `${req.body.name} commented on your post`,
             description: req.body.description,
-            post: req.params.id
+            post: req.params.id,
+            readStatus: false
           })
           await notif.save();
           await User.findByIdAndUpdate(post.user, {$push: { notifications : notif._id}}).exec();

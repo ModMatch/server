@@ -6,7 +6,8 @@ var NotificationSchema = new Schema(
   {
     title: {type: String, required: true},
     description: {type: String, required: true},
-    post: {type: Schema.Types.ObjectId, ref: 'Post', required: false}
+    post: {type: Schema.Types.ObjectId, ref: 'Post', required: false},
+    readStatus: {type: Boolean, default: false, required: true}
   }
 );
 

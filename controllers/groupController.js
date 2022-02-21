@@ -46,16 +46,17 @@ exports.updateGroup = [
             title: post.title,
             description: post.description
           });
-          var notif = new Notification({
-            title: `Your ${post.tag} group has been formed`,
-            description: " "
-          })
           await confirmedGroup.save();
-          await notif.save()
           post.comments.forEach(i => {
             Comment.findByIdAndRemove(i).exec();
           })
           req.body.users.forEach(async u => {
+            var notif = new Notification({
+              title: `Your ${post.tag} group has been formed`,
+              description: " ",
+              readStatus: false
+            })
+            await notif.save();
             await User.findByIdAndUpdate(u, {
               $pull: {applied: req.body.postid},
               $push: {notifications : notif._id}
@@ -93,7 +94,8 @@ exports.updateVetGroup = [
       var notif = new Notification({
         title: `${req.body.name} applied for your group`,
         description: " ",
-        post: req.body.postid
+        post: req.body.postid,
+        readStatus: false
       })
       await notif.save()
       await request.save();
@@ -139,14 +141,15 @@ exports.closeVetGroup = [
       });
       let userArr = [post.user._id];
       const group = post.group;
-      var notif = new Notification({
-        title: `Your ${post.tag} group has been formed`,
-        description: " "
-      })
-      await notif.save()
       group.requests.forEach(async r => {
         if (r.approval === 'true') {
           userArr.push(r.user);
+          var notif = new Notification({
+            title: `Your ${post.tag} group has been formed`,
+            description: " ",
+            readStatus: false
+          })
+          await notif.save()
           await User.findByIdAndUpdate(r.user, {
             $push: {notifications : notif._id},
             $pull: {applied: req.params.id}

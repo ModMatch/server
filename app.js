@@ -14,6 +14,7 @@ var postRouter = require('./routes/post');
 var userRouter = require('./routes/user');
 var groupRouter = require('./routes/group');
 var confirmedGroupRouter = require('./routes/confirmedgroup');
+var notificationRouter = require('./routes/notification');
 
 //Set up mongoose connection
 var mongoose = require('mongoose');
@@ -37,6 +38,7 @@ app.use("/posts", postRouter);
 app.use('/users', userRouter);
 app.use('/groups', groupRouter);
 app.use('/confirmedgroups', confirmedGroupRouter);
+app.use('/notifications', notificationRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
